@@ -5,17 +5,52 @@
  */
 package ru.markov.vkproject.vkapi;
 
+import com.vk.api.sdk.client.TransportClient;
+import com.vk.api.sdk.client.VkApiClient;
+import com.vk.api.sdk.client.actors.UserActor;
+import com.vk.api.sdk.exceptions.ApiException;
+import com.vk.api.sdk.exceptions.ClientException;
+import com.vk.api.sdk.httpclient.HttpTransportClient;
+import com.vk.api.sdk.objects.UserAuthResponse;
+import com.vk.api.sdk.objects.groups.responses.GetMembersResponse;
+import com.vk.api.sdk.queries.groups.GroupsGetMembersSort;
+import java.util.Scanner;
 
 /**
  *
  * @author rodion
  */
 public class Authorization {
+
     
-   public static String access_token = "";
-   
-   String APP_ID = "7146156";
-   
-   String Secret_Key="61xeVl8DMGKc3QBHz3tV";
-   
+    private static UserActor actor = null;
+    private static VkApiClient vk = null;
+    private Authorization() {
+    }
+    
+    public static VkApiClient initVkApiClient(){
+        if(vk==null){
+            TransportClient transportClient = HttpTransportClient.getInstance();
+            vk = new VkApiClient(transportClient);
+            return vk;
+        }else return vk;
+    }
+
+    public static UserActor initUserActor() throws ApiException, ClientException {
+        if (actor == null) {
+            initVkApiClient();
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("Insert code:");
+            String code = scanner.nextLine();
+            UserAuthResponse authResponse = vk.oauth()
+                    .userAuthorizationCodeFlow(8, "", "", code)
+                    .execute();
+            actor = new UserActor(authResponse.getUserId(), authResponse.getAccessToken());
+
+            return actor;
+        } else {
+            return actor;
+        }
+    }
+
 }

@@ -22,33 +22,32 @@ public class JsonParser {
         return count;
     }
 
-    public List<User> getMembers(String json) {
-
-        List<User> users = new ArrayList<>();
-
-        JSONObject obj = new JSONObject(json);
-        JSONObject response = obj.getJSONObject("response");
-
-        JSONArray arr = response.getJSONArray("items");
-        for (int i = 0; i < arr.length(); i++) {
-            users.add(new User(arr.getInt(i)));
-        }
-
-        return users;
-    }
-    
-        public List<User> getMembersExsecute(String json) {
-
-        List<User> users = new ArrayList<>();
-
-        JSONObject obj = new JSONObject(json);
+//    public List<User> getMembers(String json) {
+//
+//        List<User> users = new ArrayList<>();
+//
+//        JSONObject obj = new JSONObject(json);
 //        JSONObject response = obj.getJSONObject("response");
+//
+//        JSONArray arr = response.getJSONArray("items");
+//        for (int i = 0; i < arr.length(); i++) {
+//            users.add(new User(arr.getString(i)));
+//        }
+//
+//        return users;
+//    }
+    
+        public List<User> getMembersExsecute(String response) {
 
-        JSONArray arr = obj.getJSONArray("response");
-        for (int i = 0; i < arr.length(); i++) {
-            users.add(new User(arr.getInt(i)));
+       List<User> users = new ArrayList<>();
+
+        response = response.replace("\"", "");
+        String[] user = response.split(",");
+      
+        for (int i = 0; i < user.length; i++) {
+            users.add(new User(Integer.valueOf(user[i])));
         }
-
+        
         return users;
     }
 
