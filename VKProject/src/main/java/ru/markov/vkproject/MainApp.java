@@ -4,8 +4,7 @@ package ru.markov.vkproject;
 
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
-import java.util.List;
-import ru.markov.vkproject.entity.User;
+import com.vk.api.sdk.queries.likes.LikesType;
 import ru.markov.vkproject.vkapi.UserActivityVKAPI;
 import ru.markov.vkproject.vkapi.VKAPI;
 
@@ -24,7 +23,8 @@ public class MainApp {
 //            System.out.println(i + " - " +friend);
 //            i++;
 //        }
-        (new UserActivityVKAPI()).getComments(-111905078, 22683, 50, 0);
+
+        (new UserActivityVKAPI()).getLike(-29573241, 13377582, LikesType.POST);
     }
     
 }
