@@ -1,0 +1,67 @@
+var off=0;
+var members = API.groups.getMembers
+({"group_id": '64980863',
+"v": "5.103",
+"sort": "id_asc",
+"count": "1000",
+"offset": (off),
+"fields": "sex, bdate, city, country"}).items;
+off=off+1000;
+while(off<25000){
+members = members+API.groups.getMembers
+({"group_id": '64980863',
+"v": "5.103",
+"sort": "id_asc",
+"count": "1000",
+"offset": (off),
+"fields": "sex, bdate, city, country"}).items;
+off=off+1000;
+}
+
+return members;
+
+язык жизни ненасильственное общение
+
+var repost = API.wall.get
+({"owner_id": '96144252',
+"v": "5.103",
+"filter": "owner",
+"count": "100",
+"offset": (0),
+"extended": '1'}).items;
+var listOfObjects = [];
+
+var singleObj = {
+"user_id":96144252,
+"repost": repost
+};
+listOfObjects.push(singleObj);
+return listOfObjects
+
+
+var count = 0;
+var repost;
+var listOfObjects = [];
+var mas = userId;
+while(count<25){
+	repost = API.wall.get
+	({"owner_id": mas[count],
+	"v": "5.103",
+	"filter": "owner",
+	"count": "100",
+	"offset": (0),
+	"extended": '1'}).items;
+	
+	var singleObj = {
+	"user_id":mas[count],
+	"repost": repost
+	};
+	listOfObjects.push(singleObj);
+	count=count+1;
+}
+
+return listOfObjects;
+
+var mas = userId;
+
+return mas[3];

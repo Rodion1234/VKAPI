@@ -4,23 +4,24 @@ import com.google.gson.JsonElement;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.likes.responses.GetListResponse;
-import com.vk.api.sdk.objects.wall.CommentAttachment;
 import com.vk.api.sdk.objects.wall.WallComment;
 import com.vk.api.sdk.objects.wall.responses.GetCommentsResponse;
 import com.vk.api.sdk.queries.likes.LikesGetListFilter;
 import com.vk.api.sdk.queries.likes.LikesType;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jsonparsers.JsonParser;
 import ru.markov.vkproject.entity.Comment;
+import ru.markov.vkproject.entity.Like;
 
 public class UserActivityVKAPI {
 
-    public void getComments(Integer owner_id, Integer post_id, Integer preview_length, int count) {
+    public List<Comment> getComments(Integer owner_id, Integer post_id, Integer preview_length, int count) {
 
-        List<Comment> userID = new ArrayList<>();
+        List<Comment> comments = new ArrayList<>();
         int offset = 0;
         GetCommentsResponse gcr;
         while (offset < count) {
@@ -30,45 +31,28 @@ public class UserActivityVKAPI {
                         .getComments(Authorization.initUserActor(), post_id)
                         .ownerId(owner_id)
                         .previewLength(preview_length)
-                        .count(count)
+                        .count(100)
                         .offset(offset)
                         .execute();
-//            Comment comment = new Comment();
                 List<WallComment> wallComments = gcr.getItems();
 
-                String id = "";
-                String fromId = "";
-                String owner_ID = "";
-                String date = "";
-                String replyToComment = "";
-                String replyToUser = "";
-                String text = "";
-                for (WallComment wallComment : wallComments) {
-                    id = String.valueOf(wallComment.getId());
-                    fromId = String.valueOf(wallComment.getFromId());
-                    owner_ID = String.valueOf(owner_id);
-                    java.util.Date time = new java.util.Date((long) wallComment.getDate() * 1000);
-                    date = time.toString();
-                    replyToComment = String.valueOf(wallComment.getReplyToComment());
-                    replyToUser = String.valueOf(wallComment.getReplyToUser());
-                    text = wallComment.getText();
-                    System.out.println("id: " + id + "fromId: " + fromId + " owner_ID: " + owner_ID + " date: " + date + " replyToComment: " + replyToComment + " replyToUser: " + replyToUser + " text:" + text);
-                }
-                count += 100;
+                comments.addAll(new JsonParser().getComments(wallComments, owner_id, post_id));
+                offset += 100;
             } catch (ApiException ex) {
                 System.out.println("Too many requests per second (6): Too many requests per second");
             } catch (ClientException ex) {
                 Logger.getLogger(VKAPI.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        return comments;
     }
 
-    public void getLike(Integer owner_id, Integer item_id, LikesType type) {
+    public List<Like> getLike(Integer owner_id, Integer item_id, LikesType type) {
 
         GetListResponse glr;
         JsonElement response = null;
         int count = 0, offset = 0;
-        String user = "";
+        String like = "";
         try {
             glr = Authorization.initVkApiClient()
                     .likes()
@@ -95,20 +79,72 @@ public class UserActivityVKAPI {
                         + "while(off<25000){\n"
                         + "like= like + API.likes.getList({\n"
                         + "\"type\": \"post\",\n"
-                        + "\"owner_id\": \"-29573241\",\n"
-                        + "\"item_id\": '13377582',\n"
+                        + "\"owner_id\": \"" + owner_id + "\",\n"
+                        + "\"item_id\": '" + item_id + "',\n"
                         + "\"filter\": \"likes\",\n"
                         + "\"friends_only\": '0',\n"
                         + "\"extended\": '0',\n"
                         + "\"friends_only\": '0',\n"
                         + "\"count\": '1000',\n"
-                        + "\"offset\": (off+"+offset+")\n"
+                        + "\"offset\": (off+" + offset + ")\n"
                         + "}).items;\n"
                         + "off =off+1000;\n"
                         + "}\n"
                         + "return like;"
                 ).execute();
                 offset += 25000;
+                like = like + response.toString();
+            } catch (ApiException ex) {
+                System.out.println(ex.getMessage());
+            } catch (ClientException ex) {
+                Logger.getLogger(VKAPI.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return new JsonParser().getLike(like, owner_id, item_id);
+    }
+
+    public void getRepost(Integer owner_id, Integer item_id, LikesType type) {
+        List<Like> likes = getLike(owner_id, item_id, type);
+        JsonElement response = null;
+        List<Integer> userId = new ArrayList<>();
+
+        for (Like like : likes) {
+            userId.add(like.getUser_id());
+        }
+        int counter = 0;
+        List<Integer> newList = null;
+        while (counter < userId.size()) {
+            if (userId.size() - counter < 24) {
+                newList = userId.subList(counter, userId.size());
+            } else {
+                newList = userId.subList(counter, counter + 24);
+            }
+            try {
+                response = Authorization.initVkApiClient().execute().code(Authorization.initUserActor(),
+                        "var count = 0;\n"
+                        + "var repost;\n"
+                        + "var listOfObjects = [];\n"
+                        + "var mas = " + newList.toString() + ";\n"
+                        + "while(count<25){\n"
+                        + "	repost = API.wall.get\n"
+                        + "	({\"owner_id\": mas[count],\n"
+                        + "	\"v\": \"5.103\",\n"
+                        + "	\"filter\": \"owner\",\n"
+                        + "	\"count\": \"100\",\n"
+                        + "	\"offset\": (0),\n"
+                        + "	\"extended\": '1'}).items;\n"
+                        + "	\n"
+                        + "	var singleObj = {\n"
+                        + "	\"user_id\":mas[count],\n"
+                        + "	\"repost\": repost\n"
+                        + "	};\n"
+                        + "	listOfObjects.push(singleObj);\n"
+                        + "	count=count+1;\n"
+                        + "}\n"
+                        + "\n"
+                        + "return listOfObjects;"
+                ).execute();
+                counter=counter+24;
                 System.out.println(response.toString());
             } catch (ApiException ex) {
                 System.out.println(ex.getMessage());
@@ -116,8 +152,5 @@ public class UserActivityVKAPI {
                 Logger.getLogger(VKAPI.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-
-        System.out.println(
-                "users : " + user);
     }
 }

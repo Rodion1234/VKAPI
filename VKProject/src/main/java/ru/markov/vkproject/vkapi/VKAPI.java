@@ -54,18 +54,27 @@ public class VKAPI {
             try {
                 response = Authorization.initVkApiClient().execute().code(Authorization.initUserActor(),
                         "var off=0;\n"
-                        + "var members;\n"
-                        + "while(off<25000){\n"
-                        + "members = members + API.groups.getMembers"
-                        + "({\"group_id\": '" + groupId + "',"
-                        + " \"v\": \"5.102\","
-                        + " \"sort\": \"id_asc\","
-                        + " \"count\": \"1000\","
-                        + " \"offset\": (off+" + offset + ")}).items;\n"
+                        + "var members = API.groups.getMembers\n"
+                        + "({\"group_id\": '"+groupId+"',\n"
+                        + "\"v\": \"5.103\",\n"
+                        + "\"sort\": \"id_asc\",\n"
+                        + "\"count\": \"1000\",\n"
+                        + "\"offset\": (off+"+offset+"),\n"
+                        + "\"fields\": \"sex, bdate, city, country\"}).items;\n"
+                        + "off=off+1000;\n"
+                        + "while(off<10000){\n"
+                        + "members = members+API.groups.getMembers\n"
+                        + "({\"group_id\": '"+groupId+"',\n"
+                        + "\"v\": \"5.103\",\n"
+                        + "\"sort\": \"id_asc\",\n"
+                        + "\"count\": \"1000\",\n"
+                        + "\"offset\": (off+"+offset+"),\n"
+                        + "\"fields\": \"sex, bdate, city, country\"}).items;\n"
                         + "off=off+1000;\n"
                         + "}\n"
-                        + "return members; ").execute();
-                offset += 25000;
+                        + "\n"
+                        + "return members;").execute();
+                offset += 10000;
                 user = user + response.toString();
             } catch (ApiException ex) {
                 System.out.println("Too many requests per second (6): Too many requests per second");
@@ -74,8 +83,7 @@ public class VKAPI {
             }
         }
 
-        userID.addAll(new JsonParser().getMembersExsecute(user));
-        return userID;
+        return new JsonParser().getMembersExsecute(user);
     }
 
     public int getCountMembers(String groupId) {
@@ -117,7 +125,7 @@ public class VKAPI {
         }
         return gr.getItems();
     }
-    
+
 //    public List<Integer> getUserIsMember(Integer userId, String groupId) {
 //        BoolInt gr = null;
 //        try {
@@ -135,5 +143,4 @@ public class VKAPI {
 //        }
 //        return gr.getItems();
 //    }
-
 }
