@@ -43,7 +43,7 @@ public class Authorization {
             System.out.println("Insert code:");
             String code = scanner.nextLine();
             UserAuthResponse authResponse = vk.oauth()
-                    .userAuthorizationCodeFlow(0, "123", "", code)
+                    .userAuthorizationCodeFlow(0, "", "", code)
                     .execute();
             actor = new UserActor(authResponse.getUserId(), authResponse.getAccessToken());
 

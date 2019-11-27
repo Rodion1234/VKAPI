@@ -9,21 +9,22 @@ import com.vk.api.sdk.objects.wall.responses.GetCommentsResponse;
 import com.vk.api.sdk.queries.likes.LikesGetListFilter;
 import com.vk.api.sdk.queries.likes.LikesType;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jsonparsers.JsonParser;
 import ru.markov.vkproject.entity.Comment;
 import ru.markov.vkproject.entity.Like;
+import ru.markov.vkproject.entity.Repost;
 
 public class UserActivityVKAPI {
 
-    public List<Comment> getComments(Integer owner_id, Integer post_id, Integer preview_length, int count) {
+    public List<Comment> getComments(Integer owner_id, Integer post_id, Integer preview_length) {
 
         List<Comment> comments = new ArrayList<>();
         int offset = 0;
         GetCommentsResponse gcr;
+        int count =1;
         while (offset < count) {
             try {
                 gcr = Authorization.initVkApiClient()
@@ -35,7 +36,7 @@ public class UserActivityVKAPI {
                         .offset(offset)
                         .execute();
                 List<WallComment> wallComments = gcr.getItems();
-
+                count = gcr.getCount();
                 comments.addAll(new JsonParser().getComments(wallComments, owner_id, post_id));
                 offset += 100;
             } catch (ApiException ex) {
@@ -103,9 +104,10 @@ public class UserActivityVKAPI {
         return new JsonParser().getLike(like, owner_id, item_id);
     }
 
-    public void getRepost(Integer owner_id, Integer item_id, LikesType type) {
+    public List<Repost> getRepost(Integer owner_id, Integer item_id, LikesType type) {
         List<Like> likes = getLike(owner_id, item_id, type);
         JsonElement response = null;
+        List<Repost> reposts = new ArrayList<>();
         List<Integer> userId = new ArrayList<>();
 
         for (Like like : likes) {
@@ -114,8 +116,8 @@ public class UserActivityVKAPI {
         int counter = 0;
         List<Integer> newList = null;
         while (counter < userId.size()) {
-            if (userId.size() - counter < 24) {
-                newList = userId.subList(counter, userId.size());
+            if (userId.size() - 1 - counter < 24) {
+                newList = userId.subList(counter, userId.size() - 1);
             } else {
                 newList = userId.subList(counter, counter + 24);
             }
@@ -144,13 +146,15 @@ public class UserActivityVKAPI {
                         + "\n"
                         + "return listOfObjects;"
                 ).execute();
-                counter=counter+24;
-                System.out.println(response.toString());
+                counter = counter + 24;
+//                System.out.println(response.toString());
+                reposts.addAll(new JsonParser().getRepost(response.toString(), owner_id, item_id));
             } catch (ApiException ex) {
                 System.out.println(ex.getMessage());
             } catch (ClientException ex) {
                 Logger.getLogger(VKAPI.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        return reposts;
     }
 }

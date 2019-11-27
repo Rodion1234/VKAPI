@@ -3,7 +3,6 @@ package ru.markov.vkproject.vkapi;
 import com.google.gson.JsonElement;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
-import com.vk.api.sdk.objects.base.BoolInt;
 import com.vk.api.sdk.objects.friends.responses.GetResponse;
 import com.vk.api.sdk.objects.groups.responses.GetMembersResponse;
 import com.vk.api.sdk.queries.friends.FriendsGetOrder;

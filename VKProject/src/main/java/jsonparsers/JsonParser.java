@@ -7,6 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import ru.markov.vkproject.entity.Comment;
 import ru.markov.vkproject.entity.Like;
+import ru.markov.vkproject.entity.Repost;
 import ru.markov.vkproject.entity.User;
 
 public class JsonParser {
@@ -96,6 +97,59 @@ public class JsonParser {
             likes.add(like1);
         }
         return likes;
+    }
+
+    public List<Repost> getRepost(String response, Integer owner_id, Integer item_id) {
+        JSONArray arr = new JSONArray(response);
+        List<Repost> reposts = new ArrayList<>();
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject object = arr.getJSONObject(i);
+            Repost repost = null;
+            if (!object.isNull("repost")) {
+
+                JSONArray arrReposts = object.getJSONArray("repost");
+                for (int j = 0; j < arrReposts.length(); j++) {
+                    JSONObject object1 = arrReposts.getJSONObject(j);
+                    if (object1.has("copy_history")) {
+                        JSONArray arrRepost = object1.getJSONArray("copy_history");
+                        for (int k = 0; k < arrRepost.length(); k++) {
+                            JSONObject object2 = arrRepost.getJSONObject(k);
+                            if (object2.has("id")) {
+                                if (object2.getInt("id") == item_id) {
+                                    repost = new Repost();
+                                    repost.setItem_id(item_id);
+                                    repost.setOwner_id(owner_id);
+                                }
+                            }
+                        }
+                    } else {
+                        break;
+                    }
+                    if (repost != null) {
+                        repost.setDate(new java.util.Date((long) object1.getInt("date") * 1000));
+                    }
+                }
+                if (repost != null) {
+                    if (!object.isNull("user_id")) {
+                        repost.setUser_id(object.getInt("user_id"));
+                    }
+                    boolean flag = true;
+                    for (Repost repost1 : reposts) {
+                        if (repost.getUser_id() != null) {
+                            if (repost.getUser_id().equals(repost1.getUser_id())) {
+                                flag = false;
+                            }
+                        } else {
+                            flag = false;
+                        }
+                    }
+                    if (flag == true) {
+                        reposts.add(repost);
+                    }
+                }
+            }
+        }
+        return reposts;
     }
 
     public boolean getError(String json) {

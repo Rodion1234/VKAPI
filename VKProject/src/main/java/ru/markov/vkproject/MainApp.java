@@ -6,6 +6,7 @@ import com.vk.api.sdk.queries.likes.LikesType;
 import java.util.List;
 import ru.markov.vkproject.entity.Comment;
 import ru.markov.vkproject.entity.Like;
+import ru.markov.vkproject.entity.Repost;
 import ru.markov.vkproject.entity.User;
 import ru.markov.vkproject.vkapi.UserActivityVKAPI;
 import ru.markov.vkproject.vkapi.VKAPI;
@@ -34,9 +35,12 @@ public class MainApp {
 //        for (Like user1 : like) {
 //            System.out.println(user1);
 //        
+//111905078_23795111905078_23767
+    List<Repost>reposts=activityVKAPI.getRepost(-111905078, 23767, LikesType.POST);
 
-    activityVKAPI.getRepost(-111905078, 23767, LikesType.POST);
-
+        for (Repost repost : reposts) {
+            System.out.println(repost.toString());
+        }
 //        List<Integer> friends = vkapi.getFriends(166416);
         //        int i = 1;
         //        for (Integer friend : friends) {
